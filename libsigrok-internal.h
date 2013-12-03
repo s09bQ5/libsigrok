@@ -282,6 +282,10 @@ SR_PRIV GSList *sr_usb_find(libusb_context *usb_ctx, const char *conn);
 SR_PRIV int sr_usb_open(libusb_context *usb_ctx, struct sr_usb_dev_inst *usb);
 #endif
 
+/*--- hardware/common/usbtmc.c ----------------------------------------------*/
+
+SR_PRIV struct sr_channel *usbtmc_channel_new(const char *device);
+
 /*--- hardware/common/dmm/es51922.c -----------------------------------------*/
 
 #define ES51922_PACKET_SIZE 14

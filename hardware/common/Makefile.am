@@ -22,7 +22,7 @@ SUBDIRS = dmm
 # Local lib, this is NOT meant to be installed!
 noinst_LTLIBRARIES = libsigrok_hw_common.la
 
-libsigrok_hw_common_la_SOURCES = fd.c
+libsigrok_hw_common_la_SOURCES = fd.c usbtmc.c
 
 if NEED_SERIAL
 libsigrok_hw_common_la_SOURCES += serial.c
