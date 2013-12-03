@@ -128,6 +128,13 @@ SR_PRIV int sr_channel_nonblocking_write(struct sr_channel *channel,
 SR_PRIV int sr_channel_close(struct sr_channel *channel);
 SR_PRIV void sr_channel_free(struct sr_channel *channel);
 
+/*--- fd.c ------------------------------------------------------------------*/
+
+SR_PRIV int sr_fd_read_blocking(int fd, void *buf, size_t count, unsigned int timeout);
+SR_PRIV int sr_fd_read_nonblocking(int fd, void *buf, size_t count);
+SR_PRIV int sr_fd_write_blocking(int fd, const void *buf, size_t count, unsigned int timeout);
+SR_PRIV int sr_fd_write_nonblocking(int fd, const void *buf, size_t count);
+
 /*--- log.c -----------------------------------------------------------------*/
 
 SR_PRIV int sr_log(int loglevel, const char *format, ...);
