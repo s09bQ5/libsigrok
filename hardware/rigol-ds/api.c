@@ -217,7 +217,7 @@ static int probe_port(const char *port, GSList **devices)
 {
 	struct dev_context *devc;
 	struct sr_dev_inst *sdi;
-	struct sr_usbtmc_dev_inst *usbtmc;
+	struct sr_channel *channel;
 	struct sr_probe *probe;
 	unsigned int i;
 	int len, num_tokens;
@@ -227,17 +227,17 @@ static int probe_port(const char *port, GSList **devices)
 	gchar **tokens, *channel_name;
 
 	*devices = NULL;
-	if (!(usbtmc = sr_usbtmc_dev_inst_new(port)))
+	if (!(channel = usbtmc_channel_new(port)))
 		return SR_ERR_MALLOC;
 
-	if ((usbtmc->fd = open(usbtmc->device, O_RDWR)) < 0)
+	if (sr_channel_open(channel, CHANNEL_READ | CHANNEL_WRITE) < 0)
 		return SR_ERR;
-	len = write(usbtmc->fd, "*IDN?", 5);
-	len = read(usbtmc->fd, buf, sizeof(buf));
-	if (close(usbtmc->fd) < 0)
+	len = sr_channel_blocking_write(channel, "*IDN?", 5, 0);
+	len = sr_channel_blocking_read(channel, buf, sizeof(buf), 0);
+	if (sr_channel_close(channel) < 0)
 		return SR_ERR;
 
-	sr_usbtmc_dev_inst_free(usbtmc);
+	sr_channel_free(channel);
 
 	if (len == 0)
 		return SR_ERR_NA;
@@ -277,10 +277,10 @@ static int probe_port(const char *port, GSList **devices)
 
 	g_strfreev(tokens);
 
-	if (!(sdi->conn = sr_usbtmc_dev_inst_new(port)))
+	if (!(sdi->conn = usbtmc_channel_new(port)))
 		return SR_ERR_MALLOC;
 	sdi->driver = di;
-	sdi->inst_type = SR_INST_USBTMC;
+	sdi->inst_type = SR_INST_CHANNEL;
 
 	if (!(devc = g_try_malloc0(sizeof(struct dev_context))))
 		return SR_ERR_MALLOC;
@@ -399,9 +399,9 @@ static GSList *dev_list(void)
 
 static int dev_open(struct sr_dev_inst *sdi)
 {
-	struct sr_usbtmc_dev_inst *usbtmc = sdi->conn;
+	struct sr_channel *channel = sdi->conn;
 
-	if ((usbtmc->fd = open(usbtmc->device, O_RDWR)) < 0)
+	if ((sr_channel_open(channel, CHANNEL_READ | CHANNEL_WRITE)) < 0)
 		return SR_ERR;
 
 	if (rigol_ds_get_dev_cfg(sdi) != SR_OK)
@@ -414,12 +414,10 @@ static int dev_open(struct sr_dev_inst *sdi)
 
 static int dev_close(struct sr_dev_inst *sdi)
 {
-	struct sr_usbtmc_dev_inst *usbtmc;
+	struct sr_channel *channel = sdi->conn;
 
-	usbtmc = sdi->conn;
-	if (usbtmc && usbtmc->fd != -1) {
-		close(usbtmc->fd);
-		usbtmc->fd = -1;
+	if (channel) {
+		sr_channel_close(channel);
 		sdi->status = SR_ST_INACTIVE;
 	}
 
@@ -739,7 +737,7 @@ static int config_list(int key, GVariant **data, const struct sr_dev_inst *sdi,
 
 static int dev_acquisition_start(const struct sr_dev_inst *sdi, void *cb_data)
 {
-	struct sr_usbtmc_dev_inst *usbtmc;
+	struct sr_channel *channel;
 	struct dev_context *devc;
 	struct sr_probe *probe;
 	GSList *l;
@@ -748,7 +746,7 @@ static int dev_acquisition_start(const struct sr_dev_inst *sdi, void *cb_data)
 	if (sdi->status != SR_ST_ACTIVE)
 		return SR_ERR_DEV_CLOSED;
 
-	usbtmc = sdi->conn;
+	channel = sdi->conn;
 	devc = sdi->priv;
 
 	if (devc->data_source == DATA_SOURCE_LIVE) {
@@ -794,7 +792,7 @@ static int dev_acquisition_start(const struct sr_dev_inst *sdi, void *cb_data)
 	if (!devc->enabled_analog_probes && !devc->enabled_digital_probes)
 		return SR_ERR;
 
-	sr_source_add(usbtmc->fd, G_IO_IN, 50, rigol_ds_receive, (void *)sdi);
+	sr_channel_source_add(channel, G_IO_IN, 50, rigol_ds_receive, (void *)sdi);
 
 	/* Send header packet to the session bus. */
 	std_session_send_df_header(cb_data, LOG_PREFIX);
@@ -845,7 +843,7 @@ static int dev_acquisition_start(const struct sr_dev_inst *sdi, void *cb_data)
 static int dev_acquisition_stop(struct sr_dev_inst *sdi, void *cb_data)
 {
 	struct dev_context *devc;
-	struct sr_usbtmc_dev_inst *usbtmc;
+	struct sr_channel *channel;
 
 	(void)cb_data;
 
@@ -860,8 +858,8 @@ static int dev_acquisition_stop(struct sr_dev_inst *sdi, void *cb_data)
 	g_slist_free(devc->enabled_digital_probes);
 	devc->enabled_analog_probes = NULL;
 	devc->enabled_digital_probes = NULL;
-	usbtmc = sdi->conn;
-	sr_source_remove(usbtmc->fd);
+	channel = sdi->conn;
+	sr_channel_source_remove(channel);
 
 	return SR_OK;
 }
