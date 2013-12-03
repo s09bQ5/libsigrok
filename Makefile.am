@@ -28,6 +28,7 @@ lib_LTLIBRARIES = libsigrok.la
 
 libsigrok_la_SOURCES = \
 	backend.c \
+	channel.c \
 	device.c \
 	session.c \
 	session_file.c \

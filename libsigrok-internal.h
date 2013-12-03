@@ -91,6 +91,43 @@ struct drv_context {
 	GSList *instances;
 };
 
+/*--- channel.c -------------------------------------------------------------*/
+
+#define CHANNEL_READ SP_MODE_READ
+#define CHANNEL_WRITE SP_MODE_WRITE
+
+/* A bidirectional, binary data channel. */
+struct sr_channel {
+	int (*open)(void *priv, unsigned int flags);
+	int (*source_add)(void *priv, int events, int timeout,
+			sr_receive_data_callback_t cb, void *cb_data);
+	int (*source_remove)(void *priv);
+	int (*blocking_read)(void *priv, void *buf, size_t count,
+			unsigned int timeout);
+	int (*nonblocking_read)(void *priv, void *buf, size_t count);
+	int (*blocking_write)(void *priv, const void *buf, size_t count,
+			unsigned int timeout);
+	int (*nonblocking_write)(void *priv, const void *buf, size_t count);
+	int (*close)(void *priv);
+	void (*free)(void *priv);
+	void *priv;
+};
+
+SR_PRIV int sr_channel_open(struct sr_channel *channel, unsigned int flags);
+SR_PRIV int sr_channel_source_add(struct sr_channel *channel, int events, int timeout,
+			sr_receive_data_callback_t cb, void *cb_data);
+SR_PRIV int sr_channel_source_remove(struct sr_channel *channel);
+SR_PRIV int sr_channel_blocking_read(struct sr_channel *channel,
+		void *buf, size_t count, unsigned int timeout);
+SR_PRIV int sr_channel_nonblocking_read(struct sr_channel *channel,
+		void *buf, size_t count);
+SR_PRIV int sr_channel_blocking_write(struct sr_channel *channel,
+		const void *buf, size_t count, unsigned int timeout);
+SR_PRIV int sr_channel_nonblocking_write(struct sr_channel *channel,
+		const void *buf, size_t count);
+SR_PRIV int sr_channel_close(struct sr_channel *channel);
+SR_PRIV void sr_channel_free(struct sr_channel *channel);
+
 /*--- log.c -----------------------------------------------------------------*/
 
 SR_PRIV int sr_log(int loglevel, const char *format, ...);
