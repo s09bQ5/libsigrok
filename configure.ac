@@ -573,7 +573,7 @@ AC_TYPE_UINT64_T
 AC_TYPE_SIZE_T
 
 # Checks for library functions.
-AC_CHECK_FUNCS([gettimeofday memset strchr strcspn strdup strerror strncasecmp strstr strtol strtoul strtoull])
+AC_CHECK_FUNCS([gettimeofday memset strchr strcspn strdup strerror strncasecmp strstr strtol strtoul strtoull vsprintf_l uselocale])
 
 AC_SUBST(FIRMWARE_DIR, "$datadir/sigrok-firmware")
 AC_SUBST(MAKEFLAGS, '--no-print-directory')

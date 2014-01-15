@@ -273,6 +273,7 @@ SR_PRIV int sr_atol(const char *str, long *ret);
 SR_PRIV int sr_atoi(const char *str, int *ret);
 SR_PRIV int sr_atod(const char *str, double *ret);
 SR_PRIV int sr_atof(const char *str, float *ret);
+SR_PRIV int vsprintf_nolocale(char *buf, const char *format, va_list ap);
 
 /*--- hardware/common/serial.c ----------------------------------------------*/
 

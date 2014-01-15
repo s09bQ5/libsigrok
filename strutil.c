@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <locale.h>
 #include "libsigrok.h"
 #include "libsigrok-internal.h"
 
@@ -570,6 +571,27 @@ SR_API int sr_parse_voltage(const char *voltstr, uint64_t *p, uint64_t *q)
 	}
 
 	return SR_OK;
+}
+
+SR_PRIV int vsprintf_nolocale(char *buf, const char *format, va_list ap)
+{
+	locale_t locale;
+	int result;
+
+	locale = newlocale(LC_ALL, "C", NULL);
+#ifdef _WIN32
+	result = _vsprintf_l(buf, format, locale, ap);
+#elif defined(HAVE_VSPRINTF_L)
+	result = vsprintf_l(buf, format, locale, ap);
+#elif defined(HAVE_USELOCALE)
+	uselocale(locale);
+	result = vsprintf(buf, format, ap);
+#else
+#error "No implementation available for vsprintf_nolocale"
+#endif
+	freelocale(locale);
+
+	return result;
 }
 
 /** @} */
