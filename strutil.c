@@ -575,10 +575,19 @@ SR_API int sr_parse_voltage(const char *voltstr, uint64_t *p, uint64_t *q)
 
 SR_PRIV int vsprintf_nolocale(char *buf, const char *format, va_list ap)
 {
+#ifdef _WIN32
+	_locale_t locale;
+#else
 	locale_t locale;
+#endif
 	int result;
 
+#ifdef _WIN32
+	locale = _create_locale(LC_ALL, "C");
+#else
 	locale = newlocale(LC_ALL, "C", NULL);
+#endif
+
 #ifdef _WIN32
 	result = _vsprintf_l(buf, format, locale, ap);
 #elif defined(HAVE_VSPRINTF_L)
@@ -589,7 +598,12 @@ SR_PRIV int vsprintf_nolocale(char *buf, const char *format, va_list ap)
 #else
 #error "No implementation available for vsprintf_nolocale"
 #endif
+
+#ifdef _WIN32
+	_free_locale(locale);
+#else
 	freelocale(locale);
+#endif
 
 	return result;
 }
