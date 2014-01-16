@@ -579,6 +579,9 @@ SR_PRIV int vsprintf_nolocale(char *buf, const char *format, va_list ap)
 	_locale_t locale;
 #else
 	locale_t locale;
+#ifdef HAVE_USELOCALE
+	locale_t prev_locale;
+#endif
 #endif
 	int result;
 
@@ -593,8 +596,9 @@ SR_PRIV int vsprintf_nolocale(char *buf, const char *format, va_list ap)
 #elif defined(HAVE_VSPRINTF_L)
 	result = vsprintf_l(buf, format, locale, ap);
 #elif defined(HAVE_USELOCALE)
-	uselocale(locale);
+	prev_locale = uselocale(locale);
 	result = vsprintf(buf, format, ap);
+	uselocale(prev_locale);
 #else
 #error "No implementation available for vsprintf_nolocale"
 #endif
