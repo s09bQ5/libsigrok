@@ -573,28 +573,29 @@ SR_API int sr_parse_voltage(const char *voltstr, uint64_t *p, uint64_t *q)
 	return SR_OK;
 }
 
+#ifdef _WIN32
+#define locale_t _locale_t
+#define make_locale(mask, locale) _create_locale(mask, locale)
+#define free_locale _free_locale
+#else
+#define make_locale(mask, locale) newlocale(mask, locale, NULL)
+#define free_locale freelocale
+#endif
+
 SR_PRIV int vsprintf_nolocale(char *buf, const char *format, va_list ap)
 {
-#ifdef _WIN32
-	_locale_t locale;
-#else
 	locale_t locale;
 #ifdef HAVE_USELOCALE
 	locale_t prev_locale;
 #endif
-#endif
 	int result;
 
-#ifdef _WIN32
-	locale = _create_locale(LC_ALL, "C");
-#else
-	locale = newlocale(LC_ALL, "C", NULL);
-#endif
+	locale = make_locale(LC_ALL, "C");
 
-#ifdef _WIN32
-	result = _vsprintf_l(buf, format, locale, ap);
-#elif defined(HAVE_VSPRINTF_L)
+#if defined(HAVE_VSPRINTF_L)
 	result = vsprintf_l(buf, format, locale, ap);
+#elif defined(HAVE__VSPRINTF_L)
+	result = _vsprintf_l(buf, format, locale, ap);
 #elif defined(HAVE_USELOCALE)
 	prev_locale = uselocale(locale);
 	result = vsprintf(buf, format, ap);
@@ -603,11 +604,7 @@ SR_PRIV int vsprintf_nolocale(char *buf, const char *format, va_list ap)
 #error "No implementation available for vsprintf_nolocale"
 #endif
 
-#ifdef _WIN32
-	_free_locale(locale);
-#else
-	freelocale(locale);
-#endif
+	free_locale(locale);
 
 	return result;
 }
