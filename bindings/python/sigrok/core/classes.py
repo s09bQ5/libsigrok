@@ -58,6 +58,8 @@ def gvariant_to_python(value):
 def python_to_gvariant(value):
     if isinstance(value, int):
         return g_variant_new_uint64(value)
+    if isinstance(value, long):
+        return g_variant_new_uint64(value)
     if isinstance(value, bool):
         return g_variant_new_boolean(value)
     if isinstance(value, float):
@@ -214,6 +216,12 @@ class Device(object):
                 channel_group_list = channel_group_list.next
         return self._channel_groups
 
+    def open(self):
+        check(sr_dev_open(self.struct))
+
+    def close(self):
+        check(sr_dev_close(self.struct))
+
 class HardwareDevice(Device):
 
     def __new__(cls, driver, struct):
@@ -222,7 +230,10 @@ class HardwareDevice(Device):
         return device
 
     def __getattr__(self, name):
-        key = getattr(ConfigKey, name)
+        try:
+            key = getattr(ConfigKey, name)
+        except AttributeError:
+            raise AttributeError, "%r has no attribute '%s'" % (self, name)
         data = new_gvariant_ptr_ptr()
         try:
             check(sr_config_get(self.driver.struct, self.struct, None,
@@ -324,9 +335,6 @@ class Session(object):
 
     def add_device(self, device):
         check(sr_session_dev_add(device.struct))
-
-    def open_device(self, device):
-        check(sr_dev_open(device.struct))
 
     def add_callback(self, callback):
         wrapper = partial(callback_wrapper, self, callback)
@@ -601,7 +609,34 @@ class QuantityFlag(EnumValue):
         return result
 
 class ConfigKey(EnumValue):
-    pass
+
+    def parse_string(self, string):
+        if self.info.datatype is DataType.UINT64:
+            result_ptr = new_uint64_ptr()
+            ret = sr_parse_sizestring(string, result_ptr)
+            if ret != SR_OK:
+                raise ValueError, "Invalid integer value: %r" % string
+            return uint64_ptr_value(result_ptr)
+        elif self.info.datatype is DataType.BOOL:
+            return sr_parse_boolstring(string)
+        elif self.info.datatype is DataType.FLOAT:
+            return float(string)
+        elif self.info.datatype is DataType.RATIONAL_PERIOD:
+            p_ptr = new_uint64_ptr()
+            q_ptr = new_uint64_ptr()
+            ret = sr_parse_period(string, p_ptr, q_ptr)
+            if ret != SR_OK:
+                raise ValueError, "Invalid period value: %r" % string
+            return Fraction(uint64_ptr_value(p_ptr), uint64_ptr_value(q_ptr))
+        elif self.info.datatype is DataType.RATIONAL_VOLT:
+            p_ptr = new_uint64_ptr()
+            q_ptr = new_uint64_ptr()
+            ret = sr_parse_voltage(string, p_ptr, q_ptr)
+            if ret != SR_OK:
+                raise ValueError, "Invalid voltage value: %r" % string
+            return Fraction(uint64_ptr_value(p_ptr), uint64_ptr_value(q_ptr))
+        else:
+            raise NotImplementedError, "No parser for this data type"
 
 class DataType(EnumValue):
     pass
