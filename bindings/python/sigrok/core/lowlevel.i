@@ -69,6 +69,41 @@ int sr_session_datafeed_python_callback_add(PyObject *cb)
     }
 }
 
+void sr_session_source_python_callback(int fd, int revents, void *cb_data)
+{
+    PyObject *arglist;
+    PyObject *result;
+    PyGILState_STATE gstate;
+    PyObject *python_callback;
+
+    python_callback = (PyObject *) cb_data;
+    gstate = PyGILState_Ensure();
+
+    arglist = Py_BuildValue("(ii)", fd, revents);
+
+    result = PyEval_CallObject(python_callback, arglist);
+
+    Py_XDECREF(arglist);
+    Py_XDECREF(result);
+
+    PyGILState_Release(gstate);
+}
+
+int sr_session_source_python_callback_add(int fd, int revents, int timeout, PyObject *cb)
+{
+    int ret;
+
+    if (!PyCallable_Check(cb))
+        return SR_ERR_ARG;
+    else {
+        ret = sr_session_source_add(fd, revents, timeout,
+            sr_session_source_python_callback, cb);
+        if (ret == SR_OK)
+            Py_XINCREF(cb);
+        return ret;
+    }
+}
+
 PyObject *cdata(const void *data, unsigned long size)
 {
 #if PY_MAJOR_VERSION < 3
@@ -106,6 +141,7 @@ PyObject *gslist_to_python(GSList *gslist)
 %}
 
 int sr_session_datafeed_python_callback_add(PyObject *cb);
+int sr_session_source_python_callback_add(int fd, int revents, int timeout, PyObject *cb);
 
 PyObject *cdata(const void *data, unsigned long size);
 

@@ -78,6 +78,15 @@ struct _GString
 
 gchar *g_string_free(GString *string, gboolean free_segment);
 
+typedef enum {
+  G_IO_IN,
+  G_IO_OUT,
+  G_IO_PRI,
+  G_IO_ERR,
+  G_IO_HUP,
+  G_IO_NVAL
+} GIOCondition;
+
 %include "libsigrok/libsigrok.h"
 #undef SR_API
 #define SR_API
