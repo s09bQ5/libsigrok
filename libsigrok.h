@@ -900,6 +900,12 @@ enum {
 	/** The device has internal storage, into which data is logged. This
 	 * starts or stops the internal logging. */
 	SR_CONF_DATALOG,
+
+	/** Device mode for multi-function devices. */
+	SR_CONF_DEVICE_MODE,
+
+	/** Self test mode. */
+	SR_CONF_TEST_MODE,
 };
 
 /** Device instance data
