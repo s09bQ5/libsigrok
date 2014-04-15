@@ -45,6 +45,20 @@ static const struct fx2lafw_profile supported_fx2[] = {
 		0, NULL, NULL},
 
 	/*
+	 * DreamSourceLab DSLogic (before FW upload)
+	 */
+	{ 0x2A0E, 0x0001, "DreamSourceLab", "DSLogic", NULL,
+		FIRMWARE_DIR "/dreamsourcelab-dslogic-fx2.fw",
+		DEV_CAPS_16BIT, NULL, NULL},
+
+	/*
+	 * DreamSourceLab DSLogic (after FW upload)
+	 */
+	{ 0x0925, 0x3881, "DreamSourceLab", "DSLogic", NULL,
+		FIRMWARE_DIR "/dreamsourcelab-dslogic-fx2.fw",
+		DEV_CAPS_16BIT, "DreamSourceLab", "DSLogic"},
+
+	/*
 	 * Saleae Logic
 	 * EE Electronics ESLA100
 	 * Robomotic MiniLogic
@@ -75,6 +89,9 @@ static const struct fx2lafw_profile supported_fx2[] = {
 
 static const int32_t hwopts[] = {
 	SR_CONF_CONN,
+	SR_CONF_DEVICE_MODE,
+	SR_CONF_EXTERNAL_CLOCK,
+	SR_CONF_TEST_MODE,
 };
 
 static const int32_t hwcaps[] = {
@@ -112,6 +129,38 @@ static const uint64_t samplerates[] = {
 	SR_MHZ(24),
 };
 
+static const uint64_t dslogic_samplerates[] = {
+	SR_KHZ(10),
+	SR_KHZ(20),
+	SR_KHZ(50),
+	SR_KHZ(100),
+	SR_KHZ(200),
+	SR_KHZ(500),
+	SR_MHZ(1),
+	SR_MHZ(2),
+	SR_MHZ(5),
+	SR_MHZ(10),
+	SR_MHZ(20),
+	SR_MHZ(25),
+	SR_MHZ(50),
+	SR_MHZ(100),
+	SR_MHZ(200),
+	SR_MHZ(400),
+};
+
+static const char *dslogic_mode_names[] = {
+	"Logic Analyzer",
+	"Oscilloscope",
+	"Data Acquisition",
+};
+
+static const char *dslogic_test_names[] = {
+	"None",
+	"Internal Test",
+	"External Test",
+	"DRAM Loopback Test",
+};
+
 SR_PRIV struct sr_dev_driver fx2lafw_driver_info;
 static struct sr_dev_driver *di = &fx2lafw_driver_info;
 
@@ -134,17 +183,35 @@ static GSList *scan(GSList *options)
 	libusb_device **devlist;
 	struct libusb_device_handle *hdl;
 	int devcnt, num_logic_channels, ret, i, j;
-	const char *conn;
+	const char *conn, *stropt;
 	char manufacturer[64], product[64];
+	gboolean dslogic;
+	int dslogic_mode;
 
 	drvc = di->priv;
 
 	conn = NULL;
+	dslogic_mode = DSLOGIC_MODE_LOGIC;
+
 	for (l = options; l; l = l->next) {
 		src = l->data;
 		switch (src->key) {
 		case SR_CONF_CONN:
 			conn = g_variant_get_string(src->data, NULL);
+			break;
+		case SR_CONF_DEVICE_MODE:
+			stropt = g_variant_get_string(src->data, NULL);
+			dslogic_mode = -1;
+			for (i = 0; i < ARRAY_SIZE(dslogic_mode_names); i++)
+			{
+				if (!strcmp(stropt, dslogic_mode_names[i]))
+				{
+					dslogic_mode = i;
+					break;
+				}
+			}
+			if (dslogic_mode == -1)
+				return NULL;
 			break;
 		}
 	}
@@ -226,17 +293,29 @@ static GSList *scan(GSList *options)
 			return NULL;
 		sdi->driver = di;
 
+		dslogic = !strcmp(prof->model, "DSLogic");
+
 		/* Fill in channellist according to this device's profile. */
 		num_logic_channels = prof->dev_caps & DEV_CAPS_16BIT ? 16 : 8;
 		for (j = 0; j < num_logic_channels; j++) {
-			if (!(ch = sr_channel_new(j, SR_CHANNEL_LOGIC, TRUE,
-					channel_names[j])))
+			int type;
+			if (dslogic && dslogic_mode != DSLOGIC_MODE_LOGIC)
+				type = SR_CHANNEL_ANALOG;
+			else
+				type = SR_CHANNEL_LOGIC;
+			if (!(ch = sr_channel_new(j, type, TRUE, channel_names[j])))
 				return NULL;
 			sdi->channels = g_slist_append(sdi->channels, ch);
 		}
 
 		devc = fx2lafw_dev_new();
 		devc->profile = prof;
+		devc->dslogic = dslogic;
+		devc->samplerates = dslogic ? dslogic_samplerates : samplerates;
+		devc->num_samplerates =
+			dslogic ? ARRAY_SIZE(dslogic_samplerates) : ARRAY_SIZE(samplerates);
+		if (dslogic)
+			ds_trigger_init(&devc->trigger);
 		sdi->priv = devc;
 		drvc->instances = g_slist_append(drvc->instances, sdi);
 		devices = g_slist_append(devices, sdi);
@@ -335,9 +414,43 @@ static int dev_open(struct sr_dev_inst *sdi)
 		return SR_ERR;
 	}
 
+	if (devc->dslogic)
+	{
+		if ((ret = dslogic_command_fpga_config(usb->devhdl)) != SR_OK) {
+			sr_err("Send FPGA configure command failed!");
+			return ret;
+		} else {
+			/* Takes >= 10ms for the FX2 to be ready for FPGA configure. */
+			g_usleep(10 * 1000);
+			ret = dslogic_fpga_config(usb->devhdl,
+					FIRMWARE_DIR "/dreamsourcelab-dslogic-fpga.bitstream");
+			if (ret != SR_OK) {
+				sr_err("Configure FPGA failed!");
+				return ret;
+			}
+		}
+	}
+
+	if (devc->dslogic)
+	{
+		if ((ret = dslogic_command_fpga_config(usb->devhdl)) != SR_OK) {
+			sr_err("Send FPGA configure command failed!");
+			return ret;
+		} else {
+			/* Takes >= 10ms for the FX2 to be ready for FPGA configure. */
+			g_usleep(10 * 1000);
+			ret = dslogic_fpga_config(usb->devhdl,
+					FIRMWARE_DIR "/dreamsourcelab-dslogic-fpga.bitstream");
+			if (ret != SR_OK) {
+				sr_err("Configure FPGA failed!");
+				return ret;
+			}
+		}
+	}
+
 	if (devc->cur_samplerate == 0) {
 		/* Samplerate hasn't been set; default to the slowest one. */
-		devc->cur_samplerate = samplerates[0];
+		devc->cur_samplerate = devc->samplerates[0];
 	}
 
 	return SR_OK;
@@ -410,6 +523,18 @@ static int config_get(int id, GVariant **data, const struct sr_dev_inst *sdi,
 	case SR_CONF_SAMPLERATE:
 		*data = g_variant_new_uint64(devc->cur_samplerate);
 		break;
+	case SR_CONF_DEVICE_MODE:
+		*data = g_variant_new_string(dslogic_mode_names[devc->dslogic_mode]);
+		break;
+	case SR_CONF_EXTERNAL_CLOCK:
+		if (!devc->dslogic)
+			return SR_ERR_NA;
+		*data = g_variant_new_boolean(devc->dslogic_ext_clock);
+		break;
+	case SR_CONF_TEST_MODE:
+		if (!devc->dslogic)
+			return SR_ERR_NA;
+		*data = g_variant_new_string(dslogic_test_names[devc->dslogic_test]);
 	default:
 		return SR_ERR_NA;
 	}
@@ -421,7 +546,8 @@ static int config_set(int id, GVariant *data, const struct sr_dev_inst *sdi,
 		const struct sr_channel_group *cg)
 {
 	struct dev_context *devc;
-	int ret;
+	const char *stropt;
+	int ret, i;
 
 	(void)cg;
 
@@ -443,6 +569,26 @@ static int config_set(int id, GVariant *data, const struct sr_dev_inst *sdi,
 		case SR_CONF_LIMIT_SAMPLES:
 			devc->limit_samples = g_variant_get_uint64(data);
 			break;
+		case SR_CONF_EXTERNAL_CLOCK:
+			if (!devc->dslogic)
+				return SR_ERR_NA;
+			devc->dslogic_ext_clock = g_variant_get_boolean(data);
+			break;
+		case SR_CONF_TEST_MODE:
+			if (!devc->dslogic)
+				return SR_ERR_NA;
+			stropt = g_variant_get_string(data, NULL);
+			ret = SR_ERR_ARG;
+			for (i = 0; i < ARRAY_SIZE(dslogic_test_names); i++)
+			{
+				if (!strcmp(stropt, dslogic_test_names[i]))
+				{
+					devc->dslogic_test = i;
+					ret = SR_OK;
+					break;
+				}
+			}
+			break;
 		default:
 			ret = SR_ERR_NA;
 	}
@@ -455,8 +601,8 @@ static int config_list(int key, GVariant **data, const struct sr_dev_inst *sdi,
 {
 	GVariant *gvar;
 	GVariantBuilder gvb;
+	struct dev_context *devc = sdi->priv;
 
-	(void)sdi;
 	(void)cg;
 
 	switch (key) {
@@ -470,13 +616,21 @@ static int config_list(int key, GVariant **data, const struct sr_dev_inst *sdi,
 		break;
 	case SR_CONF_SAMPLERATE:
 		g_variant_builder_init(&gvb, G_VARIANT_TYPE("a{sv}"));
-		gvar = g_variant_new_fixed_array(G_VARIANT_TYPE("t"), samplerates,
-				ARRAY_SIZE(samplerates), sizeof(uint64_t));
+		gvar = g_variant_new_fixed_array(G_VARIANT_TYPE("t"), devc->samplerates,
+				devc->num_samplerates, sizeof(uint64_t));
 		g_variant_builder_add(&gvb, "{sv}", "samplerates", gvar);
 		*data = g_variant_builder_end(&gvb);
 		break;
 	case SR_CONF_TRIGGER_TYPE:
 		*data = g_variant_new_string(TRIGGER_TYPE);
+		break;
+	case SR_CONF_DEVICE_MODE:
+		*data = g_variant_new_strv(dslogic_mode_names,
+				ARRAY_SIZE(dslogic_mode_names));
+		break;
+	case SR_CONF_TEST_MODE:
+		*data = g_variant_new_strv(dslogic_test_names,
+				ARRAY_SIZE(dslogic_test_names));
 		break;
 	default:
 		return SR_ERR_NA;
@@ -502,10 +656,9 @@ static int receive_data(int fd, int revents, void *cb_data)
 	return TRUE;
 }
 
-static int dev_acquisition_start(const struct sr_dev_inst *sdi, void *cb_data)
+static int dev_transfer_start(const struct sr_dev_inst *sdi)
 {
 	struct dev_context *devc;
-	struct drv_context *drvc;
 	struct sr_usb_dev_inst *usb;
 	struct libusb_transfer *transfer;
 	unsigned int i, timeout, num_transfers;
@@ -513,26 +666,17 @@ static int dev_acquisition_start(const struct sr_dev_inst *sdi, void *cb_data)
 	unsigned char *buf;
 	size_t size;
 
-	if (sdi->status != SR_ST_ACTIVE)
-		return SR_ERR_DEV_CLOSED;
-
-	drvc = di->priv;
 	devc = sdi->priv;
 	usb = sdi->conn;
 
-	/* Configures devc->trigger_* and devc->sample_wide */
-	if (fx2lafw_configure_channels(sdi) != SR_OK) {
-		sr_err("Failed to configure channels.");
-		return SR_ERR;
-	}
-
-	devc->cb_data = cb_data;
-	devc->num_samples = 0;
-	devc->empty_transfer_count = 0;
-
 	timeout = fx2lafw_get_timeout(devc);
 	num_transfers = fx2lafw_get_number_of_transfers(devc);
-	size = fx2lafw_get_buffer_size(devc);
+	if (devc->dslogic && devc->dslogic_mode == DSLOGIC_MODE_ANALOG)
+		size = 128;
+	else if (devc->dslogic && devc->dslogic_mode == DSLOGIC_MODE_DSO)
+		size = 1024 * 16;
+	else
+		size = fx2lafw_get_buffer_size(devc);
 	devc->submitted_transfers = 0;
 
 	devc->transfers = g_try_malloc0(sizeof(*devc->transfers) * num_transfers);
@@ -549,11 +693,11 @@ static int dev_acquisition_start(const struct sr_dev_inst *sdi, void *cb_data)
 		}
 		transfer = libusb_alloc_transfer(0);
 		libusb_fill_bulk_transfer(transfer, usb->devhdl,
-				2 | LIBUSB_ENDPOINT_IN, buf, size,
+				(devc->dslogic ? 6 : 2) | LIBUSB_ENDPOINT_IN, buf, size,
 				fx2lafw_receive_transfer, devc, timeout);
 		if ((ret = libusb_submit_transfer(transfer)) != 0) {
 			sr_err("Failed to submit transfer: %s.",
-			       libusb_error_name(ret));
+					libusb_error_name(ret));
 			libusb_free_transfer(transfer);
 			g_free(buf);
 			fx2lafw_abort_acquisition(devc);
@@ -563,16 +707,156 @@ static int dev_acquisition_start(const struct sr_dev_inst *sdi, void *cb_data)
 		devc->submitted_transfers++;
 	}
 
-	devc->ctx = drvc->sr_ctx;
+	if (devc->dslogic)
+		devc->dslogic_status = DSLOGIC_DATA;
 
-	usb_source_add(devc->ctx, timeout, receive_data, NULL);
+	return SR_OK;
+}
+
+static void dslogic_receive_trigger_pos(struct libusb_transfer *transfer)
+{
+	struct dev_context *devc;
+	struct sr_datafeed_packet packet;
+	struct ds_trigger_pos *trigger_pos;
+	int ret;
+
+	devc = transfer->user_data;
+	sr_info("receive trigger pos handle...");
+
+	if (devc->num_samples == -1) {
+		fx2lafw_free_transfer(transfer);
+		return;
+	}
+
+	sr_info("dslogic_receive_trigger_pos(): "
+		"status %d; timeout %d; received %d bytes.",
+		transfer->status, transfer->timeout, transfer->actual_length);
+
+	if (devc->dslogic_status != DSLOGIC_ERROR) {
+		trigger_pos = (struct ds_trigger_pos *)transfer->buffer;
+		switch (transfer->status) {
+		case LIBUSB_TRANSFER_COMPLETED:
+			packet.type = SR_DF_TRIGGER;
+			packet.payload = trigger_pos;
+			sr_session_send(devc->cb_data, &packet);
+
+			devc->dslogic_status = DSLOGIC_TRIGGERED;
+			fx2lafw_free_transfer(transfer);
+			devc->num_transfers = 0;
+			break;
+		default:
+			fx2lafw_abort_acquisition(devc);
+			fx2lafw_free_transfer(transfer);
+			devc->dslogic_status = DSLOGIC_ERROR;
+			break;
+		}
+
+		if (devc->dslogic_status == DSLOGIC_TRIGGERED) {
+			if ((ret = dev_transfer_start(devc->cb_data)) != SR_OK) {
+				sr_err("%s: could not start data transfer"
+					   "(%d)", __func__, ret);
+			}
+		}
+	}
+}
+
+static int dev_acquisition_start(const struct sr_dev_inst *sdi, void *cb_data)
+{
+	struct drv_context *drvc;
+	struct dev_context *devc;
+	struct sr_usb_dev_inst *usb;
+	struct libusb_transfer *transfer;
+	struct ds_trigger_pos *trigger_pos;
+	int ret;
+
+	if (sdi->status != SR_ST_ACTIVE)
+		return SR_ERR_DEV_CLOSED;
+
+	drvc = di->priv;
+	devc = sdi->priv;
+	usb = sdi->conn;
+
+	devc->cb_data = cb_data;
+	devc->num_samples = 0;
+	devc->empty_transfer_count = 0;
+	if (devc->dslogic)
+		devc->dslogic_status = DSLOGIC_INIT;
+	devc->num_transfers = 0;
+	devc->submitted_transfers = 0;
+
+	/* Configures devc->trigger_* and devc->sample_wide */
+	if (fx2lafw_configure_channels(sdi) != SR_OK) {
+		sr_err("Failed to configure channels.");
+		return SR_ERR;
+	}
+
+	if (devc->dslogic) {
+		/* Stop previous GPIF acquisition */
+		if ((ret = dslogic_command_stop_acquisition (usb->devhdl)) != SR_OK) {
+			sr_err("Stop DSLogic acquisition failed!");
+			fx2lafw_abort_acquisition(devc);
+			return ret;
+		} else {
+			sr_info("Stop Previous DSLogic acquisition!");
+		}
+
+		/* Setting FPGA before acquisition start */
+		if ((ret = dslogic_command_fpga_setting(usb->devhdl,
+				sizeof(struct dslogic_setting) / sizeof(uint16_t))) != SR_OK) {
+			sr_err("Send FPGA setting command failed!");
+		} else {
+			if ((ret = dslogic_fpga_setting(sdi)) != SR_OK) {
+				sr_err("Configure FPGA failed!");
+				fx2lafw_abort_acquisition(devc);
+				return ret;
+			}
+		}
+	} else {
+		dev_transfer_start(sdi);
+	}
+
+	usb_source_add(drvc->sr_ctx, fx2lafw_get_timeout(devc), receive_data, NULL);
+
+	if (devc->dslogic) {
+		/* poll trigger status transfer*/
+		if (!(trigger_pos = g_try_malloc0(sizeof(struct ds_trigger_pos)))) {
+			sr_err("USB trigger_pos buffer malloc failed.");
+			return SR_ERR_MALLOC;
+		}
+		devc->transfers = g_try_malloc0(sizeof(*devc->transfers));
+		if (!devc->transfers) {
+			sr_err("USB trigger_pos transfer malloc failed.");
+			return SR_ERR_MALLOC;
+		}
+		devc->num_transfers = 1;
+		transfer = libusb_alloc_transfer(0);
+		libusb_fill_bulk_transfer(transfer, usb->devhdl,
+				6 | LIBUSB_ENDPOINT_IN, 
+				(unsigned char *) trigger_pos,
+				sizeof(struct ds_trigger_pos),
+				dslogic_receive_trigger_pos, devc, 0);
+		if ((ret = libusb_submit_transfer(transfer)) != 0) {
+			sr_err("Failed to submit trigger_pos transfer: %s.",
+				   libusb_error_name(ret));
+			libusb_free_transfer(transfer);
+			g_free(trigger_pos);
+			fx2lafw_abort_acquisition(devc);
+			return SR_ERR;
+		}
+		devc->transfers[0] = transfer;
+		devc->submitted_transfers++;
+
+		devc->dslogic_status = DSLOGIC_START;
+	}
 
 	/* Send header packet to the session bus. */
 	std_session_send_df_header(cb_data, LOG_PREFIX);
 
-	if ((ret = fx2lafw_command_start_acquisition(sdi)) != SR_OK) {
-		fx2lafw_abort_acquisition(devc);
-		return ret;
+	if (!devc->dslogic) {
+		if ((ret = fx2lafw_command_start_acquisition(sdi)) != SR_OK) {
+			fx2lafw_abort_acquisition(devc);
+			return ret;
+		}
 	}
 
 	return SR_OK;
