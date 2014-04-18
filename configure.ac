@@ -46,10 +46,12 @@ AH_BOTTOM([#endif /* SR_CONFIG_H */])
 # and enforce use of SR_API to explicitly mark all public API functions.
 COMMON_FLAGS="$CFLAGS -Wall -Wextra -fvisibility=hidden"
 CFLAGS="$COMMON_FLAGS -Wmissing-prototypes"
+CXXFLAGS="-std=c++11 $COMMON_FLAGS"
 
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_CPP
+AC_PROG_CXX
 AC_PROG_INSTALL
 AC_PROG_LN_S
 
@@ -394,6 +396,11 @@ PKG_CHECK_MODULES([alsa], [alsa >= 1.0],
 	SR_PKGLIBS="$SR_PKGLIBS alsa"],
 	[HW_ALSA="no"])
 
+# glibmm-2.4 is needed for the C++ bindings.
+PKG_CHECK_MODULES([GLIBMM], [glibmm-2.4],
+	[CXXFLAGS="$CXXFLAGS $GLIBMM_CFLAGS";
+	CXXLIBS="$CXXLIBS $GLIBMM_LIBS"], [])
+
 # The Check unit testing framework is optional. Disable if not found.
 PKG_CHECK_MODULES([check], [check >= 0.9.4],
 	[have_check="yes"; LIB_CFLAGS="$LIB_CFLAGS $check_CFLAGS";
@@ -411,6 +418,7 @@ esac
 AC_SUBST(SR_PKGLIBS)
 
 CFLAGS="$CFLAGS $LIB_CFLAGS"
+CXXFLAGS="$CXXFLAGS $LIB_CFLAGS"
 
 # Now set AM_CONDITIONALs and AC_DEFINEs for the enabled/disabled drivers.
 
@@ -614,7 +622,8 @@ AC_SUBST(SR_PACKAGE_VERSION_MINOR)
 AC_SUBST(SR_PACKAGE_VERSION_MICRO)
 AC_SUBST(SR_PACKAGE_VERSION)
 
-AC_CONFIG_FILES([Makefile version.h libsigrok.pc])
+AC_CONFIG_FILES([Makefile version.h libsigrok.pc
+	bindings/c++/Makefile bindings/c++/libsigrokxx.pc])
 
 AC_OUTPUT
 
