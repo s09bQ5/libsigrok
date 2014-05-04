@@ -43,7 +43,6 @@ struct scpi_usbtmc_libusb {
 	int response_length;
 	int response_bytes_read;
 	int remaining_length;
-	int rigol_ds1000;
 };
 
 /* Some USBTMC-specific enums, as defined in the USBTMC standard. */
@@ -235,8 +234,6 @@ static int scpi_usbtmc_libusb_open(void *priv)
 				}
 			}
 			found = 1;
-			uscpi->rigol_ds1000 = des.idVendor  == 0x1ab1 &&
-			                      des.idProduct == 0x0588;
 		}
 		libusb_free_config_descriptor(confdes);
 		if (found)
@@ -270,7 +267,6 @@ static int scpi_usbtmc_libusb_open(void *priv)
 		return SR_ERR;
 	}
 
-	if (!uscpi->rigol_ds1000) {
 	if ((ret = libusb_clear_halt(usb->devhdl, uscpi->bulk_in_ep)) < 0) {
 		sr_err("Failed to clear halt/stall condition for EP %d: %s.",
 		       uscpi->bulk_in_ep, libusb_error_name(ret));
@@ -285,7 +281,6 @@ static int scpi_usbtmc_libusb_open(void *priv)
 		sr_err("Failed to clear halt/stall condition for EP %d: %s.",
 		       uscpi->interrupt_ep, libusb_error_name(ret));
 		return SR_ERR;
-	}
 	}
 
 	/* Get capabilities. */
@@ -529,7 +524,6 @@ static int scpi_usbtmc_libusb_close(void *priv)
 	if (!usb->devhdl)
 		return SR_ERR;
 
-	if (!uscpi->rigol_ds1000) {
 	if ((ret = libusb_clear_halt(usb->devhdl, uscpi->bulk_in_ep)) < 0)
 		sr_err("Failed to clear halt/stall condition for EP %d: %s.",
 		       uscpi->bulk_in_ep, libusb_error_name(ret));
@@ -539,7 +533,6 @@ static int scpi_usbtmc_libusb_close(void *priv)
 	if ((ret = libusb_clear_halt(usb->devhdl, uscpi->interrupt_ep)) < 0)
 		sr_err("Failed to clear halt/stall condition for EP %d: %s.",
 		       uscpi->interrupt_ep, libusb_error_name(ret));
-	}
 
 	if ((ret = libusb_release_interface(usb->devhdl, uscpi->interface)) < 0)
 		sr_err("Failed to release interface: %s.",
