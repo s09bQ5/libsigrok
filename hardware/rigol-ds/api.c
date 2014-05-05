@@ -400,10 +400,24 @@ static GSList *dev_list(void)
 static int dev_open(struct sr_dev_inst *sdi)
 {
 	struct sr_scpi_dev_inst *scpi = sdi->conn;
+	struct sr_scpi_hw_info *hw_info;
 
 	if (sr_scpi_open(scpi) < 0)
 		return SR_ERR;
 
+	/* Re-issue IDN query to check connection, restart if needed. */
+	if (sr_scpi_get_hw_id(scpi, &hw_info) != SR_OK) {
+		sr_info("Couldn't get IDN response, retrying.");
+		sr_scpi_close(scpi);
+		sr_scpi_open(scpi);
+		if (sr_scpi_get_hw_id(scpi, &hw_info) != SR_OK) {
+			sr_info("Couldn't get IDN response.");
+			return SR_ERR;
+		}
+	}
+	sr_scpi_hw_info_free(hw_info);
+
+	/* Now it should be reliable to get the device configuration. */
 	if (rigol_ds_get_dev_cfg(sdi) != SR_OK)
 		return SR_ERR;
 
