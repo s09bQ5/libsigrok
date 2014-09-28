@@ -733,6 +733,7 @@ struct sr_scpi_dev_inst {
 	int (*read_complete)(void *priv);
 	int (*close)(void *priv);
 	void (*free)(void *priv);
+	unsigned int read_timeout_ms;
 	void *priv;
 };
 
