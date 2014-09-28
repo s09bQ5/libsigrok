@@ -140,8 +140,8 @@ static int agdmm_send(const struct sr_dev_inst *sdi, const char *cmd)
 		strncat(buf, "\r\n", 32);
 	else
 		strncat(buf, "\n\r\n", 32);
-	if (serial_write_blocking(serial, buf, strlen(buf)) == -1) {
-		sr_err("Failed to send: %s.", strerror(errno));
+	if (serial_write_blocking(serial, buf, strlen(buf)) < strlen(buf)) {
+		sr_err("Failed to send.");
 		return SR_ERR;
 	}
 
