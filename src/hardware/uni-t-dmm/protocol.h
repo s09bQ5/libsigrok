@@ -38,6 +38,11 @@ enum {
 	UNI_T_UT61C,
 	UNI_T_UT61D,
 	UNI_T_UT61E,
+	UNI_T_UT71A,
+	UNI_T_UT71B,
+	UNI_T_UT71C,
+	UNI_T_UT71D,
+	UNI_T_UT71E,
 	VOLTCRAFT_VC820,
 	VOLTCRAFT_VC830,
 	VOLTCRAFT_VC840,
@@ -93,6 +98,11 @@ SR_PRIV int receive_data_UNI_T_UT61B(int fd, int revents, void *cb_data);
 SR_PRIV int receive_data_UNI_T_UT61C(int fd, int revents, void *cb_data);
 SR_PRIV int receive_data_UNI_T_UT61D(int fd, int revents, void *cb_data);
 SR_PRIV int receive_data_UNI_T_UT61E(int fd, int revents, void *cb_data);
+SR_PRIV int receive_data_UNI_T_UT71A(int fd, int revents, void *cb_data);
+SR_PRIV int receive_data_UNI_T_UT71B(int fd, int revents, void *cb_data);
+SR_PRIV int receive_data_UNI_T_UT71C(int fd, int revents, void *cb_data);
+SR_PRIV int receive_data_UNI_T_UT71D(int fd, int revents, void *cb_data);
+SR_PRIV int receive_data_UNI_T_UT71E(int fd, int revents, void *cb_data);
 SR_PRIV int receive_data_VOLTCRAFT_VC820(int fd, int revents, void *cb_data);
 SR_PRIV int receive_data_VOLTCRAFT_VC830(int fd, int revents, void *cb_data);
 SR_PRIV int receive_data_VOLTCRAFT_VC840(int fd, int revents, void *cb_data);

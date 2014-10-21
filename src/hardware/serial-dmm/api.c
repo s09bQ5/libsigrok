@@ -71,6 +71,11 @@ SR_PRIV struct sr_dev_driver uni_t_ut61b_ser_driver_info;
 SR_PRIV struct sr_dev_driver uni_t_ut61c_ser_driver_info;
 SR_PRIV struct sr_dev_driver uni_t_ut61d_ser_driver_info;
 SR_PRIV struct sr_dev_driver uni_t_ut61e_ser_driver_info;
+SR_PRIV struct sr_dev_driver uni_t_ut71a_ser_driver_info;
+SR_PRIV struct sr_dev_driver uni_t_ut71b_ser_driver_info;
+SR_PRIV struct sr_dev_driver uni_t_ut71c_ser_driver_info;
+SR_PRIV struct sr_dev_driver uni_t_ut71d_ser_driver_info;
+SR_PRIV struct sr_dev_driver uni_t_ut71e_ser_driver_info;
 SR_PRIV struct sr_dev_driver iso_tech_idm103n_driver_info;
 SR_PRIV struct sr_dev_driver tenma_72_7745_ser_driver_info;
 SR_PRIV struct sr_dev_driver tenma_72_7750_ser_driver_info;
@@ -296,6 +301,41 @@ SR_PRIV struct dmm_info dmms[] = {
 		sr_es519xx_19200_14b_packet_valid, sr_es519xx_19200_14b_parse,
 		NULL,
 		&uni_t_ut61e_ser_driver_info, receive_data_UNI_T_UT61E_SER,
+	},
+	{
+		"UNI-T", "UT71A (UT-D02 cable)", "2400/7n1/rts=0/dtr=1",
+		2400, ES519XX_11B_PACKET_SIZE, 0, 0, NULL,
+		sr_es519xx_2400_11b_packet_valid, sr_es519xx_2400_11b_parse,
+		NULL,
+		&uni_t_ut71a_ser_driver_info, receive_data_UNI_T_UT71A_SER,
+	},
+	{
+		"UNI-T", "UT71B (UT-D02 cable)", "2400/7n1/rts=0/dtr=1",
+		2400, ES519XX_11B_PACKET_SIZE, 0, 0, NULL,
+		sr_es519xx_2400_11b_packet_valid, sr_es519xx_2400_11b_parse,
+		NULL,
+		&uni_t_ut71b_ser_driver_info, receive_data_UNI_T_UT71B_SER,
+	},
+	{
+		"UNI-T", "UT71C (UT-D02 cable)", "2400/7n1/rts=0/dtr=1",
+		2400, ES519XX_11B_PACKET_SIZE, 0, 0, NULL,
+		sr_es519xx_2400_11b_packet_valid, sr_es519xx_2400_11b_parse,
+		NULL,
+		&uni_t_ut71c_ser_driver_info, receive_data_UNI_T_UT71C_SER,
+	},
+	{
+		"UNI-T", "UT71D (UT-D02 cable)", "2400/7n1/rts=0/dtr=1",
+		2400, ES519XX_11B_PACKET_SIZE, 0, 0, NULL,
+		sr_es519xx_2400_11b_packet_valid, sr_es519xx_2400_11b_parse,
+		NULL,
+		&uni_t_ut71d_ser_driver_info, receive_data_UNI_T_UT71D_SER,
+	},
+	{
+		"UNI-T", "UT71E (UT-D02 cable)", "2400/7n1/rts=0/dtr=1",
+		2400, ES519XX_11B_PACKET_SIZE, 0, 0, NULL,
+		sr_es519xx_2400_11b_packet_valid, sr_es519xx_2400_11b_parse,
+		NULL,
+		&uni_t_ut71e_ser_driver_info, receive_data_UNI_T_UT71E_SER,
 	},
 	{
 		"ISO-TECH", "IDM103N", "2400/7o1/rts=0/dtr=1",
@@ -633,6 +673,11 @@ DRV(uni_t_ut61b_ser, UNI_T_UT61B_SER, "uni-t-ut61b-ser", "UNI-T UT61B (UT-D02 ca
 DRV(uni_t_ut61c_ser, UNI_T_UT61C_SER, "uni-t-ut61c-ser", "UNI-T UT61C (UT-D02 cable)")
 DRV(uni_t_ut61d_ser, UNI_T_UT61D_SER, "uni-t-ut61d-ser", "UNI-T UT61D (UT-D02 cable)")
 DRV(uni_t_ut61e_ser, UNI_T_UT61E_SER, "uni-t-ut61e-ser", "UNI-T UT61E (UT-D02 cable)")
+DRV(uni_t_ut71a_ser, UNI_T_UT71A_SER, "uni-t-ut71a-ser", "UNI-T UT71A (UT-D02 cable)")
+DRV(uni_t_ut71b_ser, UNI_T_UT71B_SER, "uni-t-ut71b-ser", "UNI-T UT71B (UT-D02 cable)")
+DRV(uni_t_ut71c_ser, UNI_T_UT71C_SER, "uni-t-ut71c-ser", "UNI-T UT71C (UT-D02 cable)")
+DRV(uni_t_ut71d_ser, UNI_T_UT71D_SER, "uni-t-ut71d-ser", "UNI-T UT71D (UT-D02 cable)")
+DRV(uni_t_ut71e_ser, UNI_T_UT71E_SER, "uni-t-ut71e-ser", "UNI-T UT71E (UT-D02 cable)")
 DRV(iso_tech_idm103n, ISO_TECH_IDM103N, "iso-tech-idm103n", "ISO-TECH IDM103N")
 DRV(tenma_72_7745_ser, TENMA_72_7745_SER, "tenma-72-7745-ser", "Tenma 72-7745 (UT-D02 cable)")
 DRV(tenma_72_7750_ser, TENMA_72_7750_SER, "tenma-72-7750-ser", "Tenma 72-7750 (UT-D02 cable)")

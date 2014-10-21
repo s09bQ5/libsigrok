@@ -155,6 +155,11 @@ extern SR_PRIV struct sr_dev_driver uni_t_ut61b_ser_driver_info;
 extern SR_PRIV struct sr_dev_driver uni_t_ut61c_ser_driver_info;
 extern SR_PRIV struct sr_dev_driver uni_t_ut61d_ser_driver_info;
 extern SR_PRIV struct sr_dev_driver uni_t_ut61e_ser_driver_info;
+extern SR_PRIV struct sr_dev_driver uni_t_ut71a_ser_driver_info;
+extern SR_PRIV struct sr_dev_driver uni_t_ut71b_ser_driver_info;
+extern SR_PRIV struct sr_dev_driver uni_t_ut71c_ser_driver_info;
+extern SR_PRIV struct sr_dev_driver uni_t_ut71d_ser_driver_info;
+extern SR_PRIV struct sr_dev_driver uni_t_ut71e_ser_driver_info;
 extern SR_PRIV struct sr_dev_driver iso_tech_idm103n_driver_info;
 extern SR_PRIV struct sr_dev_driver tenma_72_7745_ser_driver_info;
 extern SR_PRIV struct sr_dev_driver tenma_72_7750_ser_driver_info;
@@ -181,6 +186,11 @@ extern SR_PRIV struct sr_dev_driver uni_t_ut61b_driver_info;
 extern SR_PRIV struct sr_dev_driver uni_t_ut61c_driver_info;
 extern SR_PRIV struct sr_dev_driver uni_t_ut61d_driver_info;
 extern SR_PRIV struct sr_dev_driver uni_t_ut61e_driver_info;
+extern SR_PRIV struct sr_dev_driver uni_t_ut71a_driver_info;
+extern SR_PRIV struct sr_dev_driver uni_t_ut71b_driver_info;
+extern SR_PRIV struct sr_dev_driver uni_t_ut71c_driver_info;
+extern SR_PRIV struct sr_dev_driver uni_t_ut71d_driver_info;
+extern SR_PRIV struct sr_dev_driver uni_t_ut71e_driver_info;
 extern SR_PRIV struct sr_dev_driver voltcraft_vc820_driver_info;
 extern SR_PRIV struct sr_dev_driver voltcraft_vc830_driver_info;
 extern SR_PRIV struct sr_dev_driver voltcraft_vc840_driver_info;
@@ -335,6 +345,11 @@ SR_PRIV struct sr_dev_driver *drivers_list[] = {
 	&uni_t_ut61c_ser_driver_info,
 	&uni_t_ut61d_ser_driver_info,
 	&uni_t_ut61e_ser_driver_info,
+	&uni_t_ut71a_ser_driver_info,
+	&uni_t_ut71b_ser_driver_info,
+	&uni_t_ut71c_ser_driver_info,
+	&uni_t_ut71d_ser_driver_info,
+	&uni_t_ut71e_ser_driver_info,
 	&iso_tech_idm103n_driver_info,
 	&tenma_72_7745_ser_driver_info,
 	&tenma_72_7750_ser_driver_info,
@@ -361,6 +376,11 @@ SR_PRIV struct sr_dev_driver *drivers_list[] = {
 	&uni_t_ut61c_driver_info,
 	&uni_t_ut61d_driver_info,
 	&uni_t_ut61e_driver_info,
+	&uni_t_ut71a_driver_info,
+	&uni_t_ut71b_driver_info,
+	&uni_t_ut71c_driver_info,
+	&uni_t_ut71d_driver_info,
+	&uni_t_ut71e_driver_info,
 	&voltcraft_vc820_driver_info,
 	&voltcraft_vc830_driver_info,
 	&voltcraft_vc840_driver_info,

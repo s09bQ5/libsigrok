@@ -45,6 +45,11 @@ SR_PRIV struct sr_dev_driver uni_t_ut61b_driver_info;
 SR_PRIV struct sr_dev_driver uni_t_ut61c_driver_info;
 SR_PRIV struct sr_dev_driver uni_t_ut61d_driver_info;
 SR_PRIV struct sr_dev_driver uni_t_ut61e_driver_info;
+SR_PRIV struct sr_dev_driver uni_t_ut71a_driver_info;
+SR_PRIV struct sr_dev_driver uni_t_ut71b_driver_info;
+SR_PRIV struct sr_dev_driver uni_t_ut71c_driver_info;
+SR_PRIV struct sr_dev_driver uni_t_ut71d_driver_info;
+SR_PRIV struct sr_dev_driver uni_t_ut71e_driver_info;
 SR_PRIV struct sr_dev_driver voltcraft_vc820_driver_info;
 SR_PRIV struct sr_dev_driver voltcraft_vc830_driver_info;
 SR_PRIV struct sr_dev_driver voltcraft_vc840_driver_info;
@@ -109,6 +114,41 @@ SR_PRIV struct dmm_info udmms[] = {
 		sr_es519xx_19200_14b_packet_valid, sr_es519xx_19200_14b_parse,
 		NULL,
 		&uni_t_ut61e_driver_info, receive_data_UNI_T_UT61E,
+	},
+	{
+		"UNI-T", "UT71A", 2400,
+		ES519XX_11B_PACKET_SIZE,
+		sr_es519xx_2400_11b_packet_valid, sr_es519xx_2400_11b_parse,
+		NULL,
+		&uni_t_ut71a_driver_info, receive_data_UNI_T_UT71A,
+	},
+	{
+		"UNI-T", "UT71B", 2400,
+		ES519XX_11B_PACKET_SIZE,
+		sr_es519xx_2400_11b_packet_valid, sr_es519xx_2400_11b_parse,
+		NULL,
+		&uni_t_ut71b_driver_info, receive_data_UNI_T_UT71B,
+	},
+	{
+		"UNI-T", "UT71C", 2400,
+		ES519XX_11B_PACKET_SIZE,
+		sr_es519xx_2400_11b_packet_valid, sr_es519xx_2400_11b_parse,
+		NULL,
+		&uni_t_ut71c_driver_info, receive_data_UNI_T_UT71C,
+	},
+	{
+		"UNI-T", "UT71D", 2400,
+		ES519XX_11B_PACKET_SIZE,
+		sr_es519xx_2400_11b_packet_valid, sr_es519xx_2400_11b_parse,
+		NULL,
+		&uni_t_ut71d_driver_info, receive_data_UNI_T_UT71D,
+	},
+	{
+		"UNI-T", "UT71E", 2400,
+		ES519XX_11B_PACKET_SIZE,
+		sr_es519xx_2400_11b_packet_valid, sr_es519xx_2400_11b_parse,
+		NULL,
+		&uni_t_ut71e_driver_info, receive_data_UNI_T_UT71E,
 	},
 	{
 		"Voltcraft", "VC-820", 2400,
@@ -415,6 +455,11 @@ DRV(uni_t_ut61b, UNI_T_UT61B, "uni-t-ut61b", "UNI-T UT61B")
 DRV(uni_t_ut61c, UNI_T_UT61C, "uni-t-ut61c", "UNI-T UT61C")
 DRV(uni_t_ut61d, UNI_T_UT61D, "uni-t-ut61d", "UNI-T UT61D")
 DRV(uni_t_ut61e, UNI_T_UT61E, "uni-t-ut61e", "UNI-T UT61E")
+DRV(uni_t_ut71a, UNI_T_UT71A, "uni-t-ut71a", "UNI-T UT71A")
+DRV(uni_t_ut71b, UNI_T_UT71B, "uni-t-ut71b", "UNI-T UT71B")
+DRV(uni_t_ut71c, UNI_T_UT71C, "uni-t-ut71c", "UNI-T UT71C")
+DRV(uni_t_ut71d, UNI_T_UT71D, "uni-t-ut71d", "UNI-T UT71D")
+DRV(uni_t_ut71e, UNI_T_UT71E, "uni-t-ut71e", "UNI-T UT71E")
 DRV(voltcraft_vc820, VOLTCRAFT_VC820, "voltcraft-vc820", "Voltcraft VC-820")
 DRV(voltcraft_vc830, VOLTCRAFT_VC830, "voltcraft-vc830", "Voltcraft VC-830")
 DRV(voltcraft_vc840, VOLTCRAFT_VC840, "voltcraft-vc840", "Voltcraft VC-840")
