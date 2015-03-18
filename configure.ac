@@ -83,6 +83,14 @@ AC_SUBST(SR_LIB_VERSION_AGE)
 AC_SUBST(SR_LIB_VERSION)
 AC_SUBST(SR_LIB_LDFLAGS)
 
+case $target_os in
+mingw* | cygwin*)
+	AM_CONDITIONAL([WIN32], true)
+	;;
+*)
+	AM_CONDITIONAL([WIN32], false)
+esac
+
 AC_ARG_ENABLE(all-drivers, AC_HELP_STRING([--enable-all-drivers],
 	[enable all drivers by default [default=yes]]),
 	[HW_ENABLED_DEFAULT="$enableval"],

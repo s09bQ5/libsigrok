@@ -399,6 +399,10 @@ libsigrok_la_LIBADD = $(LIBOBJS)
 
 libsigrok_la_LDFLAGS = $(SR_LIB_LDFLAGS)
 
+if WIN32
+libsigrok_la_LDFLAGS += -no-undefined
+endif
+
 library_includedir = $(includedir)/libsigrok
 library_include_HEADERS = \
 	include/libsigrok/libsigrok.h \
