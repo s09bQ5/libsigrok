@@ -200,6 +200,18 @@ static int scpi_usbtmc_libusb_open(void *priv)
 		return SR_ERR;
 	}
 
+	uscpi->rigol_ds1000 = des.idVendor  == 0x1ab1 &&
+			      des.idProduct == 0x0588;
+
+	if (uscpi->rigol_ds1000) {
+		sr_dbg("Detected Rigol DS1000, resetting before use.");
+		if ((ret = libusb_reset_device(usb->devhdl)) < 0) {
+			sr_err("Failed to reset device: %s.",
+			       libusb_error_name(ret));
+			return SR_ERR;
+		}
+	}
+
 	for (confidx = 0; confidx < des.bNumConfigurations; confidx++) {
 		if ((ret = libusb_get_config_descriptor(dev, confidx, &confdes)) < 0) {
 			sr_dbg("Failed to get configuration descriptor: %s, "
@@ -234,8 +246,6 @@ static int scpi_usbtmc_libusb_open(void *priv)
 				}
 			}
 			found = 1;
-			uscpi->rigol_ds1000 = des.idVendor  == 0x1ab1 &&
-			                      des.idProduct == 0x0588;
 		}
 		libusb_free_config_descriptor(confdes);
 		if (found)
