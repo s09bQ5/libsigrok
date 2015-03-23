@@ -170,6 +170,14 @@ SR_PRIV GSList *sr_scpi_scan(struct drv_context *drvc, GSList *options,
 	return devices;
 }
 
+SR_PRIV void sr_scpi_quirk(struct sr_scpi_dev_inst *scpi, int quirk)
+{
+	if (!scpi || !scpi->quirk)
+		return;
+
+	scpi->quirk(scpi->priv, quirk);
+}
+
 SR_PRIV struct sr_scpi_dev_inst *scpi_dev_inst_new(struct drv_context *drvc,
 		const char *resource, const char *serialcomm)
 {

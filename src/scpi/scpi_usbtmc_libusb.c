@@ -147,6 +147,20 @@ static GSList *scpi_usbtmc_libusb_scan(struct drv_context *drvc)
 	return resources;
 }
 
+static void scpi_usbtmc_libusb_quirk(void *priv, int quirk)
+{
+	struct scpi_usbtmc_libusb *uscpi = priv;
+
+	switch (quirk)
+	{
+	case SCPI_QUIRK_RIGOL_DS1000_PRE_2_04:
+		uscpi->rigol_ds1000 = TRUE;
+		break;
+	default:
+		break;
+	}
+}
+
 static int scpi_usbtmc_libusb_dev_inst_new(void *priv, struct drv_context *drvc,
 		const char *resource, char **params, const char *serialcomm)
 {
@@ -200,10 +214,7 @@ static int scpi_usbtmc_libusb_open(void *priv)
 		return SR_ERR;
 	}
 
-	uscpi->rigol_ds1000 = des.idVendor  == 0x1ab1 &&
-			      des.idProduct == 0x0588;
-
-	if (uscpi->rigol_ds1000) {
+	if (des.idVendor == 0x1ab1 && des.idProduct == 0x0588) {
 		sr_dbg("Detected Rigol DS1000, resetting before use.");
 		if ((ret = libusb_reset_device(usb->devhdl)) < 0) {
 			sr_err("Failed to reset device: %s.",
@@ -581,6 +592,7 @@ SR_PRIV const struct sr_scpi_dev_inst scpi_usbtmc_libusb_dev = {
 	.prefix        = "usbtmc",
 	.priv_size     = sizeof(struct scpi_usbtmc_libusb),
 	.scan          = scpi_usbtmc_libusb_scan,
+	.quirk         = scpi_usbtmc_libusb_quirk,
 	.dev_inst_new  = scpi_usbtmc_libusb_dev_inst_new,
 	.open          = scpi_usbtmc_libusb_open,
 	.source_add    = scpi_usbtmc_libusb_source_add,

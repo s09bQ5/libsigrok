@@ -865,11 +865,16 @@ struct sr_scpi_hw_info {
 	char *firmware_version;
 };
 
+enum {
+	SCPI_QUIRK_RIGOL_DS1000_PRE_2_04,
+};
+
 struct sr_scpi_dev_inst {
 	const char *name;
 	const char *prefix;
 	int priv_size;
 	GSList *(*scan)(struct drv_context *drvc);
+	void (*quirk)(void *priv, int quirk);
 	int (*dev_inst_new)(void *priv, struct drv_context *drvc,
 		const char *resource, char **params, const char *serialcomm);
 	int (*open)(void *priv);
@@ -888,6 +893,7 @@ struct sr_scpi_dev_inst {
 
 SR_PRIV GSList *sr_scpi_scan(struct drv_context *drvc, GSList *options,
 		struct sr_dev_inst *(*probe_device)(struct sr_scpi_dev_inst *scpi));
+SR_PRIV void sr_scpi_quirk(struct sr_scpi_dev_inst *scpi, int quirk);
 SR_PRIV struct sr_scpi_dev_inst *scpi_dev_inst_new(struct drv_context *drvc,
 		const char *resource, const char *serialcomm);
 SR_PRIV int sr_scpi_open(struct sr_scpi_dev_inst *scpi);

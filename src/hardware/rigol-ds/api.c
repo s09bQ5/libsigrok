@@ -312,7 +312,8 @@ static struct sr_dev_inst *probe_device(struct sr_scpi_dev_inst *scpi)
 	devc->model = model;
 	devc->format = model->series->format;
 
-	/* DS1000 models with firmware before 0.2.4 used the old data format. */
+	/* DS1000 models with firmware before 0.2.4 used the old data format.
+	 * They also need quirk handling in the USBTMC layer. */
 	if (model->series == SERIES(DS1000)) {
 		version = g_strsplit(hw_info->firmware_version, ".", 0);
 		do {
@@ -332,6 +333,7 @@ static struct sr_dev_inst *probe_device(struct sr_scpi_dev_inst *scpi)
 				break;
 			sr_dbg("Found DS1000 firmware < 0.2.4, using raw data format.");
 			devc->format = FORMAT_RAW;
+			sr_scpi_quirk(scpi, SCPI_QUIRK_RIGOL_DS1000_PRE_2_04);
 		} while(0);
 		g_strfreev(version);
 	}
