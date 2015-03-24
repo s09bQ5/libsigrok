@@ -49,6 +49,15 @@ elif [ "x$OS" = "xMINGW32_NT-6.0" ]; then
 elif [ "x$OS" = "xMINGW32_NT-6.1" ]; then
 	# Windows 7
 	ACLOCAL_DIR="-I /usr/local/share/aclocal"
+elif [ "x$OS" = "xMINGW64_NT-5.1" ]; then
+	# Windows XP
+	ACLOCAL_DIR="-I /mingw64/share/aclocal"
+elif [ "x$OS" = "xMINGW64_NT-6.0" ]; then
+	# Windows Vista
+	ACLOCAL_DIR="-I /mingw64/share/aclocal"
+elif [ "x$OS" = "xMINGW64_NT-6.1" ]; then
+	# Windows 7
+	ACLOCAL_DIR="-I /mingw64/share/aclocal"
 fi
 
 echo "Generating build system..."
