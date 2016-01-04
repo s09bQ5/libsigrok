@@ -170,37 +170,28 @@ access the serial port device (e.g. /dev/ttyS0, /dev/ttyUSB0, and so on).
 You can use 'chmod' to apply permissions as you see fit, and/or 'chown' to
 change the owner of the serial port device to a certain user or group.
 
-For USB-to-serial based devices, we recommended using our udev rules file
-(see below for details).
 
-
-Permissions for USB devices (udev rules file)
----------------------------------------------
+Permissions for USB devices
+---------------------------
 
 When using USB-based devices supported by libsigrok, the user running the
 libsigrok frontend (e.g. sigrok-cli) has to have (read/write) permissions
 for the respective USB device.
 
-On Linux, this is accomplished using either 'chmod' (not recommended) or
-using the udev rules file shipped with libsigrok (recommended).
+You can use 'chmod' to apply permissions as you see fit, and/or 'chown' to
+change the owner of the USB device to a certain user or group.
 
-The file is available in contrib/z60_libsigrok.rules. It contains entries
-for all libsigrok-supported (USB-based) devices and changes their group
-to 'plugdev' and the permissions to '664'.
+
+Automatically setting permissions for USB devices
+-------------------------------------------------
+
+The file contrib/usb_device_ids.txt contains a list of USB VID/PID pairs
+for which libsigrok drivers exist. This can be used to generate system
+specific matching rules as necessary, e.g. for udev on Linux.
 
 When using a libsigrok package from your favorite Linux distribution, the
-packager will have already taken care of properly installing the udev file
-in the correct (distro-specific) place, and you don't have to do anything.
-The packager might also have adapted 'plugdev' and '664' as needed.
-
-If you're building from source, you need to copy the file to the place
-where your distro expects such files. This is beyond the scope of this README,
-but generally the location could be e.g. /etc/udev/rules.d, or maybe
-/lib/udev/rules.d, or something else. Afterwards you might have to restart
-udev, e.g. via '/etc/init.d/udev restart' or similar, and you'll have to
-re-attach your device via USB.
-
-Please consult the udev docs of your distro for details.
+packager may have already taken care of this, in which case you don't have
+to do anything.
 
 
 Cypress FX2 based devices
