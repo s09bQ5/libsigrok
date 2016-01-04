@@ -1,0 +1,222 @@
+##
+## This file is part of the libsigrok project.
+##
+## Copyright (C) 2010-2013 Uwe Hermann <uwe@hermann-uwe.de>
+##
+## This program is free software; you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation; either version 2 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program; if not, write to the Free Software
+## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+##
+##
+## This file identifies USB devices for which libsigrok drivers exist. It may
+## be used to generate system specific matching rules.
+##
+## Format:
+##
+## USB VID/PID pairs of interest should appear on a line by themselves in
+## %04x:%04x format.
+##
+## Comments beginning with a single # may be used to annotate particular
+## entries or groups, and may be passed through to generated output if
+## desired.
+##
+## Comments beginning with ## should be excluded from generated output.
+##
+## Please keep this list sorted alphabetically by vendor and device name.
+##
+
+# Agilent USBTMC-connected devices
+# 34405A
+0957:0618
+# 34410A
+0957:0607
+# DSO1000 series
+0957:0588
+
+# ASIX SIGMA
+# ASIX SIGMA2
+a600:a000
+
+# Braintechnology USB-LPS
+16d0:0498
+
+# CEM DT-8852
+10c4:ea60
+
+# ChronoVu LA8 (new VID/PID)
+# ChronoVu LA16 (new VID/PID)
+0403:8867
+
+# CWAV USBee AX
+# ARMFLY AX-Pro (clone of the CWAV USBee AX)
+# ARMFLY Mini-Logic (clone of the CWAV USBee AX)
+# EE Electronics ESLA201A (clone of the CWAV USBee AX)
+# MCU123 USBee AX Pro clone (clone of the CWAV USBee AX)
+# XZL_Studio AX (clone of the CWAV USBee AX)
+08a9:0014
+
+# CWAV USBee DX
+# XZL_Studio DX (clone of the CWAV USBee DX)
+08a9:0015
+
+# CWAV USBee SX
+08a9:0009
+
+# Cypress FX2 eval boards without EEPROM:
+# Lcsoft Mini Board
+# Braintechnology USB Interface V2.x
+04b4:8613
+
+# Dangerous Prototypes Buspirate (v3)
+# ChronoVu LA8 (old VID/PID)
+# ChronoVu LA16 (old VID/PID)
+0403:6001
+
+# Dangerous Prototypes Buspirate (v4)
+04d8:fb00
+
+# DreamSourceLab DSLogic
+2a0e:0001
+
+# Hantek DSO-2090
+# lsusb: "04b4:2090 Cypress Semiconductor Corp."
+# lsusb after FW upload: "04b5:2090 ROHM LSI Systems USA, LLC"
+04b4:2090
+04b5:2090
+
+# Hantek DSO-2150
+# lsusb: "04b4:2150 Cypress Semiconductor Corp."
+# lsusb after FW upload: "04b5:2150 ROHM LSI Systems USA, LLC"
+04b4:2150
+04b5:2150
+
+# Hantek DSO-2250
+# lsusb: "04b4:2250 Cypress Semiconductor Corp."
+# lsusb after FW upload: "04b5:2250 ROHM LSI Systems USA, LLC"
+04b4:2250
+04b5:2250
+
+# Hantek DSO-5200
+# lsusb: "04b4:5200 Cypress Semiconductor Corp."
+# lsusb after FW upload: "04b5:5200 ROHM LSI Systems USA, LLC"
+04b4:5200
+04b5:5200
+
+# Hantek DSO-5200A
+# lsusb: "04b4:520a Cypress Semiconductor Corp."
+# lsusb after FW upload: "04b5:520a ROHM LSI Systems USA, LLC"
+04b4:520a
+04b5:520a
+
+# IKALOGIC Scanalogic-2
+20a0:4123
+
+# IKALOGIC ScanaPLUS
+0403:6014
+
+# Kecheng KC-330B
+1041:8101
+
+# Lascar Electronics EL-USB-2
+# Lascar Electronics EL-USB-CO
+# This is actually the generic SiLabs (Cygnal) F32x USBXpress VID:PID.
+10c4:0002
+
+# LeCroy LogicStudio16
+05ff:a001
+05ff:a002
+
+# Link Instruments MSO-19
+3195:f190
+
+# Logic Shrimp
+04d8:fa95
+
+# MiniLA Mockup
+0403:6010
+
+# MIC 98581
+# MIC 98583
+# Tondaj SL-814
+067b:2303
+
+# Openbench Logic Sniffer
+04d8:000a
+
+# Rigol DS1000 series
+1ab1:0588
+
+# Rigol 1000Z series
+1ab1:04ce
+
+# Rigol DS2000 series
+1ab1:04b0
+
+# Rigol DG4000 series
+1ab1:0641
+
+# Saleae Logic
+# EE Electronics ESLA100 (clone of the Saleae Logic)
+# Robomotic MiniLogic (clone of the Saleae Logic)
+# Robomotic BugLogic 3 (clone of the Saleae Logic)
+# MCU123 Saleae Logic clone (clone of the Saleae Logic)
+0925:3881
+
+# Saleae Logic16
+21a9:1001
+
+# sigrok FX2 LA (8ch)
+1d50:608c
+
+# sigrok FX2 LA (16ch)
+1d50:608d
+
+# SysClk LWLA1016
+2961:6688
+
+# SysClk LWLA1034
+2961:6689
+
+# Testo 435
+128d:0003
+
+# UNI-T UT-D04 multimeter cable (for various UNI-T and rebranded DMMs)
+# http://sigrok.org/wiki/Device_cables#UNI-T_UT-D04
+# UNI-T UT325
+1a86:e008
+
+# V&A VA4000 multimeter cable (for various V&A DMMs)
+# http://sigrok.org/wiki/Device_cables#V.26A_VA4000
+04fc:0201
+
+# Victor 70C
+# Victor 86C
+1244:d237
+
+# ZEROPLUS Logic Cube LAP-C series
+# LAP-16128U
+0c12:7002
+# LAP-C(16064)
+0c12:7009
+# LAP-C(16128)
+0c12:700a
+# LAP-C(32128)
+0c12:700b
+# LAP-C(321000)
+0c12:700c
+# LAP-C(322000)
+0c12:700d
+# LAP-C(16032)
+0c12:700e
+# LAP-C(162000)
+0c12:7016
