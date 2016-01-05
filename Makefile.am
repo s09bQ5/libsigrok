@@ -517,6 +517,7 @@ EXTRA_DIST = \
 	contrib/gnuplot_usbeesx.gpi \
 	contrib/gnuplot_usbeedx8.gpi \
 	contrib/gnuplot_usbeedx16.gpi \
+	contrib/makerules.sh \
 	contrib/sigrok-logo-notext.png \
 	contrib/usb_device_ids.txt
 
